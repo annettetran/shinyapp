@@ -7,35 +7,43 @@ library(tidyverse)
 library(leaflet)
 library(sf)
 library(devtools)
+library(maptools)
 
-sb_fhz <- st_read(dsn = ".", layer = "DustEmiss")
+dust <- st_read(dsn = ".", layer = "DustEmiss")
 # "." means look in the working directory
 
-sb_df <- st_transform(sb_fhz, "+init=epsg:4326")
+dust_df <- st_transform(dust, "+init=epsg:4326")
 
-sb_fh_class <- sb_df %>%
+emiss <- dust_df %>%
   select(Emiss_Cat)
 
+#dissolve <-unionSpatialPolygons(emiss$Emiss_Cat)
+
+shoreline <- st_read(dsn = ".", layer = "HiResBathy")
+shoreline_df <- st_transform(shoreline, "+init=epsg:4326")
+
+playa <- shoreline_df %>%
+  select(Year)
 
 
-# Define UI for application that draws a map
+
 ui <- fluidPage(
   
-  # Application title
-  titlePanel("Santa Barbara Fire Hazard Zones"),
+  titlePanel("Salton Sea Future Shoreline & Emissivity"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
       
-      selectInput("class", "Fire Hazard Class", choices = unique(sb_fh_class$Emiss_Cat))
+      selectInput("dusty", "Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat)),
+      sliderInput("shore", "Future Shoreline of the Sea", min = 2018, max = 2047, value = 2018, step = 5)
       
       
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
-      leafletOutput("fire_map")
+      leafletOutput("full_map")
     )
   )
 )
@@ -43,20 +51,31 @@ ui <- fluidPage(
 # Define server logic required to draw an interactive map
 server <- function(input, output) {
   
-  output$fire_map <- renderLeaflet({
+  output$full_map <- renderLeaflet({
     
-    fire_sub <- sb_fh_class %>%
-      filter(Emiss_Cat == input$Emiss_Cat)
+    emiss_sub <- emiss %>%
+      filter(Emiss_Cat == input$dusty)
     
-    leaflet(fire_sub) %>%
-      addTiles() %>%
+    
+    leaflet(emiss_sub) %>%
       addPolygons(weight = 0.5,
-                   color = "red",
-                   fillColor = "yellow",
-                   fillOpacity = 0.5)
+                  color = "red",
+                  fillColor = "red",
+                  fillOpacity = 1)
     
     
-  }) 
+    shore_sub <- playa %>% 
+      filter(Year == input$shore)
+    
+    leaflet(shore_sub) %>% 
+      addTiles() %>% 
+      addPolylines(weight = 1.5, color = "darkblue")
+    
+  })
+  
+  
+  
+  
   
   
 }
