@@ -53,27 +53,30 @@ server <- function(input, output) {
   
   output$full_map <- renderLeaflet({
     
-    emiss_sub <- emiss %>%
-      filter(Emiss_Cat == input$dusty)
-    
-    
-    leaflet(emiss_sub) %>%
-      addPolygons(weight = 0.5,
-                  color = "red",
-                  fillColor = "red",
-                  fillOpacity = 1)
     
     
     shore_sub <- playa %>% 
       filter(Year == input$shore)
+  
     
     leaflet(shore_sub) %>% 
-      addTiles() %>% 
-      addPolylines(weight = 1.5, color = "darkblue")
+      addProviderTiles("Stamen.Terrain") %>% 
+      addPolylines(weight = 2, color = "black")
+   }) 
+  observe({
+  emiss_sub <- emiss %>%
+    filter(Emiss_Cat == input$dusty)
+  
+  leafletProxy("full_map",data=emiss_sub) %>%
     
+      addProviderTiles("Stamen.Terrain") %>% 
+      addPolygons(weight = 0.5,
+                  color = "red",
+                  fillColor = "red",
+                  fillOpacity = 1)
+  
+  
   })
-  
-  
   
   
   
