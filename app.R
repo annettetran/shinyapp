@@ -25,6 +25,7 @@ shoreline_df <- st_transform(shoreline, "+init=epsg:4326")
 playa <- shoreline_df %>%
   select(Year)
 
+acres <- read_csv("exposedplaya.csv")
 
 
 ui <- fluidPage(
@@ -35,16 +36,18 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       
-      selectInput("dusty", "Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat)),
-      sliderInput("shore", "Future Shoreline of the Sea", min = 2018, max = 2047, value = 2018, step = 5)
+      sliderInput("shore", "Future Shoreline of the Sea", min = 2018, max = 2047, value = 2018, step = 5),
+      selectInput("dusty", "Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat))
       
       
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
-      leafletOutput("full_map")
-    )
+      leafletOutput("full_map"),
+      textOutput("shoreline")
+      
+      )
   )
 )
 
@@ -52,33 +55,37 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$full_map <- renderLeaflet({
-    
-    
-    
-    shore_sub <- playa %>% 
-      filter(Year == input$shore)
-  
-    
-    leaflet(shore_sub) %>% 
-      addProviderTiles("Stamen.Terrain") %>% 
-      addPolylines(weight = 2, color = "black")
-   }) 
-  observe({
-  emiss_sub <- emiss %>%
+     emiss_sub <- emiss %>%
     filter(Emiss_Cat == input$dusty)
-  
-  leafletProxy("full_map",data=emiss_sub) %>%
     
+  leaflet(emiss_sub) %>% 
       addProviderTiles("Stamen.Terrain") %>% 
-      addPolygons(weight = 0.5,
-                  color = "red",
-                  fillColor = "red",
-                  fillOpacity = 1)
+    addPolygons(weight = 0.5,
+                color = "red",
+                fillColor = "red",
+                fillOpacity = 1)  
+   
+   }) 
   
+  observe({
+  shore_sub <- playa %>% 
+    filter(Year == input$shore)
+  
+  leafletProxy("full_map",data=shore_sub) %>%
+      addProviderTiles("Stamen.Terrain") %>% 
+       addPolylines(weight = 3, color = "white", opacity = 1)
   
   })
+  acre_sub <- acres %>% 
+    filter(Year == input$shore)
   
-  
+ output$shoreline <- renderText({acre_sub
+   
+ })
+    
+    
+    
+
   
   
 }
