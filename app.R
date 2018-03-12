@@ -9,27 +9,21 @@ library(sf)
 library(devtools)
 library(maptools)
 
-dust <- st_read(dsn = ".", layer = "DustEmiss")
+dust <- st_read(dsn = ".", layer = "Emiss_Dissolve")
 
 dust_df <- st_transform(dust, "+init=epsg:4326")
 
 emiss <- dust_df %>%
   select(Emiss_Cat)
 
-#dissolve <-unionSpatialPolygons(emiss$Emiss_Cat)
 
-shoreline <- st_read(dsn = ".", layer = "HiResBathy")
+shoreline <- st_read(dsn = ".", layer = "SeaLevel")
 shoreline_df <- st_transform(shoreline, "+init=epsg:4326")
 
-#shoreline_df2 <- subset(shoreline_df, !(Year == "2046")) %>% 
-  #arrange(Year)
-
-#shoreline_df2$Acres<- acres$CumulativeExposed
 
 playa <- shoreline_df %>%
   select(Year)
 
-acres <- read_csv("exposedplaya.csv")
 
 
 ui <- fluidPage(
@@ -43,16 +37,14 @@ ui <- fluidPage(
       #selectInput("dusty", "Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat))
       checkboxGroupInput("dusty", "Select Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat), selected = "Least Emissive")
       
-      #"sexe","Sexe:", 
-      #choices = c("Masculin" = "mas", "Femenin" = "fem"),
-      #selected = c("mas","fem")
+      
       
       
     ),
     
     mainPanel(
-      leafletOutput("full_map")
-    #  box(textOutput("acreage"))
+      leafletOutput("full_map"),
+      textOutput("acres")
       
       )
   )
@@ -68,7 +60,7 @@ server <- function(input, output) {
   leaflet(emiss_sub) %>% 
       addProviderTiles("Stamen.Terrain") %>% 
     addPolygons(weight = 0.5,
-                color = input$dusty,
+                color = "red",
                 fillColor = "red",
                 fillOpacity = 1)  
    
@@ -80,18 +72,23 @@ server <- function(input, output) {
   
   leafletProxy("full_map",data=shore_sub) %>%
       addProviderTiles("Stamen.Terrain") %>% 
-       addPolylines(weight = 3, color = "white", opacity = 1)
+       addPolylines(weight = 3, color = "blue", opacity = 1)
   
   })
   
-  #output$acreage <- renderText(
-  # acres2 <- playa %>% 
-  #  filter(Year == input$shore)
+ output$acres <- renderText({
+   acreage <- shoreline_df %>% 
+     filter(Year == input$shore)
+   
+   acreage$Cumul_Ac
+   
+   
+   
   
-  #box(acres2)
+} )
   
   
-  #)
+
    
  }
     
