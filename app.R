@@ -33,9 +33,10 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       
-      sliderInput("shore", "Select Year", min = 2018, max = 2047, value = 2018, step = 5),
+      
+        sliderInput("shore", "Select Year:", min = 2018, max = 2047, value = 2018, step = 5),
       #selectInput("dusty", "Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat))
-      checkboxGroupInput("dusty", "Select Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat), selected = "Least Emissive")
+      checkboxGroupInput("dusty", "Select Emissivity of Exposed Playa:", choices = unique(emiss$Emiss_Cat), selected = "Least Emissive")
       
       
       
@@ -54,38 +55,30 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$full_map <- renderLeaflet({
+    
     emiss_sub <- emiss %>%
     filter(Emiss_Cat == input$dusty)
     
-  leaflet(emiss_sub) %>% 
-      addProviderTiles("Stamen.Terrain") %>% 
-    addPolygons(weight = 0.5,
+    shore_sub <- playa %>% 
+      filter(Year == input$shore)
+    
+  leaflet() %>% 
+    addProviderTiles("Stamen.Terrain") %>% 
+    addPolygons(data = emiss_sub, weight = 0.5,
                 color = "red",
                 fillColor = "red",
-                fillOpacity = 1)  
+                fillOpacity = 1) %>% 
+  addPolylines(data = shore_sub, weight = 3, color = "blue", opacity = 1)  %>% 
+  addLegend(colors = c("blue", "red"), labels = c("Shoreline", "Exposed Playa"))
    
    }) 
   
-  observe({
-  shore_sub <- playa %>% 
-    filter(Year == input$shore)
-  
-  leafletProxy("full_map",data=shore_sub) %>%
-      addProviderTiles("Stamen.Terrain") %>% 
-       addPolylines(weight = 3, color = "blue", opacity = 1)
-  
-  })
-  
+
  output$acres <- renderText({
    acreage <- shoreline_df %>% 
      filter(Year == input$shore)
    
-   acreage$Cumul_Ac
-   
-   
-   
-  
-} )
+   acreage$Cumul_Ac})
   
   
 
