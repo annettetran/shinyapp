@@ -3,11 +3,13 @@
 ####################################
 
 library(shiny)
+library(shinydashboard)
 library(tidyverse)
 library(leaflet)
 library(sf)
 library(devtools)
 library(maptools)
+library(rgdal)
 
 dust <- st_read(dsn = ".", layer = "Emiss_Dissolve")
 
@@ -34,9 +36,11 @@ ui <- fluidPage(
     sidebarPanel(
       
       
-        sliderInput("shore", "Select Year:", min = 2018, max = 2047, value = 2018, step = 5),
-      #selectInput("dusty", "Emissivity of Exposed Playa", choices = unique(emiss$Emiss_Cat))
-      checkboxGroupInput("dusty", "Select Emissivity of Exposed Playa:", choices = unique(emiss$Emiss_Cat), selected = "Least Emissive")
+      sliderInput("shore", "Select Year:", min = 2018, max = 2047, value = 2018, step = 5),
+      checkboxGroupInput("dusty", 
+                         "Select Emissivity of Future Exposed Playa:", 
+                         choices = unique(emiss$Emiss_Cat), 
+                         selected = "Most Emissive")
       
       
       
@@ -44,8 +48,9 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      leafletOutput("full_map"),
-      textOutput("acres")
+      box(title = "Map of Predicted Shoreline and Emissivity of Exposed Playa", 
+          background = "maroon", solidHeader = TRUE, leafletOutput("full_map")),
+      box(title = "Cumulative Acreage of Exposed Playa", status = "warning", textOutput("acres"))
       
       )
   )
@@ -64,12 +69,14 @@ server <- function(input, output) {
     
   leaflet() %>% 
     addProviderTiles("Stamen.Terrain") %>% 
-    addPolygons(data = emiss_sub, weight = 0.5,
+    addPolygons(data = emiss_sub,
                 color = "red",
-                fillColor = "red",
-                fillOpacity = 1) %>% 
-  addPolylines(data = shore_sub, weight = 3, color = "blue", opacity = 1)  %>% 
-  addLegend(colors = c("blue", "red"), labels = c("Shoreline", "Exposed Playa"))
+                stroke = FALSE,
+                smoothFactor = 0.2,
+                fillOpacity = 0.6) %>% 
+  addPolylines(data = shore_sub, weight = 3, color = "blue", opacity = 0.6)  %>% 
+  addLegend(colors = c("blue", "red"), 
+            labels = c("Predicted Shoreline", "Exposed Playa in 2047"))
    
    }) 
   
@@ -87,6 +94,5 @@ server <- function(input, output) {
     
 
 
-# Run the application 
 shinyApp(ui = ui, server = server)
 
