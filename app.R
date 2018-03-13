@@ -28,33 +28,43 @@ playa <- shoreline_df %>%
 
 
 
-ui <- fluidPage(
+ui <- 
   
-  titlePanel("Salton Sea Future Shoreline & Emissivity"),
+  dashboardPage(
+    
+    dashboardHeader(title = "Salton Sea Future Shoreline & Emissivity", titleWidth = 450),
+    dashboardSidebar(disable = TRUE),
   
-  sidebarLayout(
-    sidebarPanel(
-      
-      
-      sliderInput("shore", "Select Year:", min = 2018, max = 2047, value = 2018, step = 5),
-      checkboxGroupInput("dusty", 
+    dashboardBody( 
+      fluidPage(
+        
+      box(title = "Inputs", status = "success", 
+        sliderInput("shore", "Select Year:", min = 2018, max = 2047, value = 2018, step = 5),
+        checkboxGroupInput("dusty", 
                          "Select Emissivity of Future Exposed Playa:", 
                          choices = unique(emiss$Emiss_Cat), 
-                         selected = "Most Emissive")
+                         selected = "Most Emissive"), 
+        
+        submitButton(text = "Apply Changes")
+        ),
       
       
+         
       
-      
-    ),
+      box(title = "Cumulative Acreage of Exposed Playa", status = "success", span(textOutput("acres"), style = 'font-weight:bold; font-size:25px; color:red;')),
     
-    mainPanel(
       box(title = "Map of Predicted Shoreline and Emissivity of Exposed Playa", 
-          background = "maroon", solidHeader = TRUE, leafletOutput("full_map")),
-      box(title = "Cumulative Acreage of Exposed Playa", status = "warning", textOutput("acres"))
-      
-      )
-  )
-)
+          status = "success", leafletOutput("full_map")))
+    
+    )
+    
+    
+    
+    
+    )
+     
+    
+  
 
 
 server <- function(input, output) {
