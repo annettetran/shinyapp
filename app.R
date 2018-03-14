@@ -40,9 +40,27 @@ ui <-
   dashboardPage(
     
     dashboardHeader(title = "Salton Sea Future Shoreline & Emissivity", titleWidth = 450),
-    dashboardSidebar(disable = TRUE),
+    dashboardSidebar(
+      sidebarMenu(
+        menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+        menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+      )
+      
+      
+      
+    ),
   
     dashboardBody( 
+      tabItems(
+        tabItem(tabName = "dashboard",
+            box(status = "warning", title = "Introduction", includeText("dashboard.txt")),
+            box(status = "warning", title = "Data Sources")
+                
+                
+                ),
+        
+        
+        tabItem(tabName = "widgets",
       fluidPage(
         
       box(title = "Inputs", status = "success", 
@@ -55,9 +73,7 @@ ui <-
                     "Select Emissivity of Future Exposed Playa:", choices = unique(emiss$Emiss_Cat)),
         
         selectInput("owner", "Select Landowner:", choices = levels(factor(order))), 
-                      
-                      #unique(landowners$OWNER_CLAS)),
-        
+                    
         
         
         submitButton(text = "Apply Changes")
@@ -71,7 +87,7 @@ ui <-
       box(title = "Map of Predicted Shoreline and Emissivity of Exposed Playa", 
           status = "success", leafletOutput("full_map")))
     
-    )
+    )))
     
     
     
@@ -103,8 +119,8 @@ server <- function(input, output) {
                 smoothFactor = 0.2,
                 fillOpacity = 0.6) %>% 
   addPolylines(data = shore_sub, weight = 3, color = "blue", opacity = 0.6)  %>% 
-  addPolygons(data = parcel_sub, weight = 1.5, fill = NA, color = "purple", opacity = 1) %>% 
-  addLegend(colors = c("blue", "red", "purple"), 
+  addPolygons(data = parcel_sub, weight = 1.5, fill = NA, color = "green", opacity = 1) %>% 
+  addLegend(colors = c("blue", "red", "green"), 
             labels = c("Predicted Shoreline", "Exposed Playa in 2047", "Landowner Parcels"))
    
    }) 
