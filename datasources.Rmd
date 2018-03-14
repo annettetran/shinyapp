@@ -1,0 +1,13 @@
+---
+title: 
+author: 
+date: 
+output: html_document
+---
+
+
+**1. Predicted Shoreline, Acreage of Exposed Playa:** Sea level and exposed playa acreage outputs from the Salton Sea Analysis (SALSA) Model, which was developed for the Programmatic Environmental Impact Report for the Salton Sea Ecosystem Restoration Program. This was prepared under the direction of the California Department of Water Resources and the California Department of Fish and Wildlife on behalf of the Natural Resources Agency. 
+
+**2. Emissivity:** Calculated by the Salton Seafarers from wind and soil data. Wind data is from the California Air Resources Board and soil types are from USGS.
+
+**3. Land Parcels:** Imperial and Riverside Counties parcel data retrieved from Imperial Irrigation District.

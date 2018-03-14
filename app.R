@@ -11,7 +11,7 @@ library(devtools)
 library(maptools)
 library(rgdal)
 
-dust <- st_read(dsn = ".", layer = "DustEmiss")
+dust <- st_read(dsn = ".", layer = "Emiss_Dissolve")
 
 dust_df <- st_transform(dust, "+init=epsg:4326")
 
@@ -19,7 +19,7 @@ emiss <- dust_df %>%
   select(Emiss_Cat)
 
 
-shoreline <- st_read(dsn = ".", layer = "SeaLevel")
+shoreline <- st_read(dsn = ".", layer = "SeaLevel2")
 shoreline_df <- st_transform(shoreline, "+init=epsg:4326")
 
 playa <- shoreline_df %>%
@@ -32,8 +32,9 @@ parcel_df <- st_transform(parcel, "+init=epsg:4326")
 landowners <- parcel_df %>% 
   select(OWNER_CLAS)
 
-order <- factor(landowners$OWNER_CLAS, levels = c("Coachella Valley Water", "Federal", "IID", "Private", "Tribal", "Other"))
+order_l <- factor(landowners$OWNER_CLAS, levels = c("Coachella Valley Water", "Federal", "IID", "Private", "Tribal", "Other"))
 
+order_e <- factor(emiss$Emiss_Cat, levels = c("Least Emissive", "Moderately Emissive", "Highly Emissive", "Most Emissive"))
 
 ui <- 
   
@@ -42,8 +43,8 @@ ui <-
     dashboardHeader(title = "Salton Sea Future Shoreline & Emissivity", titleWidth = 450),
     dashboardSidebar(
       sidebarMenu(
-        menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-        menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+        menuItem("Information", tabName = "info", icon = icon("info-circle")),
+        menuItem("Map", tabName = "map", icon = icon("map"))
       )
       
       
@@ -52,15 +53,15 @@ ui <-
   
     dashboardBody( 
       tabItems(
-        tabItem(tabName = "dashboard",
-            box(status = "warning", title = "Introduction", includeText("dashboard.txt")),
-            box(status = "warning", title = "Data Sources")
+        tabItem(tabName = "info",
+            box(status = "warning", title = "Introduction", includeText("intro.txt")),
+            box(status = "warning", title = "Data Sources", includeMarkdown("datasources.Rmd"))
                 
                 
                 ),
         
         
-        tabItem(tabName = "widgets",
+        tabItem(tabName = "map",
       fluidPage(
         
       box(title = "Inputs", status = "success", 
@@ -70,9 +71,9 @@ ui <-
 
         
         radioButtons("dusty", 
-                    "Select Emissivity of Future Exposed Playa:", choices = unique(emiss$Emiss_Cat)),
+                    "Select Emissivity of Future Exposed Playa:", choices = levels(factor(order_e))),
         
-        selectInput("owner", "Select Landowner:", choices = levels(factor(order))), 
+        selectInput("owner", "Select Landowner:", choices = levels(factor(order_l))), 
                     
         
         
@@ -82,7 +83,7 @@ ui <-
       
          
       
-      box(title = "Cumulative Acreage of Exposed Playa", status = "success", span(textOutput("acres"), style = 'font-weight:bold; font-size:25px; color:red;')),
+      box(title = "Cumulative Acreage of Exposed Playa:", status = "success", span(textOutput("acres"), style = 'font-weight:bold; font-size:30px; color:red;')),
     
       box(title = "Map of Predicted Shoreline and Emissivity of Exposed Playa", 
           status = "success", leafletOutput("full_map")))
@@ -133,7 +134,7 @@ server <- function(input, output) {
    acreage$Cumul_Ac})
   
   
-
+#Cumul_Ac
    
  }
     

@@ -1,0 +1,3 @@
+This app shows the predicted shoreline of the Salton Sea from 2018 to 2047 in five-year increments as well as the emissivity of the exposed playa. The end year is 2047, because after that, the Sea is predicted to stabilize.
+
+Landowners of areas around the Salton Sea are also shown to see who may be potentially responsible for mitigating future dust emissions.
